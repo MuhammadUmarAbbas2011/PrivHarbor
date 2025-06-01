@@ -12,33 +12,91 @@ from cryptography.hazmat.backends import default_backend
 from datetime import datetime
 from difflib import SequenceMatcher
 
+
 class AdvancedURLSecurityScanner:
     TRUSTED_DOMAINS = [
-        "paypal.com", "google.com", "facebook.com", "apple.com", "microsoft.com",
-        "amazon.com", "linkedin.com", "instagram.com", "twitter.com", "github.com",
-        "dropbox.com", "bankofamerica.com", "chase.com", "wellsfargo.com",
-        "citibank.com", "paypal.co.uk"
+        "paypal.com",
+        "google.com",
+        "facebook.com",
+        "apple.com",
+        "microsoft.com",
+        "amazon.com",
+        "linkedin.com",
+        "instagram.com",
+        "twitter.com",
+        "github.com",
+        "dropbox.com",
+        "bankofamerica.com",
+        "chase.com",
+        "wellsfargo.com",
+        "citibank.com",
+        "paypal.co.uk",
     ]
     SUSPICIOUS_TLDS = [
-        "zip", "country", "kim", "cricket", "science", "work", "gq", "tk", "ml",
-        "cf", "ga", "xyz", "top", "click"
+        "zip",
+        "country",
+        "kim",
+        "cricket",
+        "science",
+        "work",
+        "gq",
+        "tk",
+        "ml",
+        "cf",
+        "ga",
+        "xyz",
+        "top",
+        "click",
     ]
     URL_SHORTENERS = [
-        "bit.ly", "tinyurl.com", "goo.gl", "ow.ly", "t.co", "is.gd", "buff.ly",
-        "adf.ly", "bit.do", "cutt.ly"
+        "bit.ly",
+        "tinyurl.com",
+        "goo.gl",
+        "ow.ly",
+        "t.co",
+        "is.gd",
+        "buff.ly",
+        "adf.ly",
+        "bit.do",
+        "cutt.ly",
     ]
     BLACKLIST_KEYWORDS = [
-        "login", "signin", "bank", "secure", "account", "update", "verify",
-        "password", "confirm", "ebayisapi", "webscr"
+        "login",
+        "signin",
+        "bank",
+        "secure",
+        "account",
+        "update",
+        "verify",
+        "password",
+        "confirm",
+        "ebayisapi",
+        "webscr",
     ]
     CHAR_SUBSTITUTIONS = {
-        'a': ['@', '4', 'а'], 'e': ['3', 'е'], 'i': ['1', 'l', 'і'], 'o': ['0', 'о'],
-        's': ['5', '$'], 'b': ['6', 'b'], 'g': ['9'], 'l': ['1', 'i'], 'c': ['с'],
-        'u': ['v'], 'y': ['у'], 'd': ['cl']
+        "a": ["@", "4", "а"],
+        "e": ["3", "е"],
+        "i": ["1", "l", "і"],
+        "o": ["0", "о"],
+        "s": ["5", "$"],
+        "b": ["6", "b"],
+        "g": ["9"],
+        "l": ["1", "i"],
+        "c": ["с"],
+        "u": ["v"],
+        "y": ["у"],
+        "d": ["cl"],
     }
     COMMON_TWO_PART_TLDS = [
-        "co.uk", "gov.uk", "ac.uk", "com.au", "net.au", "org.au",
-        "co.nz", "gov.nz", "ac.nz"
+        "co.uk",
+        "gov.uk",
+        "ac.uk",
+        "com.au",
+        "net.au",
+        "org.au",
+        "co.nz",
+        "gov.nz",
+        "ac.nz",
     ]
 
     def __init__(self, url):
@@ -49,19 +107,19 @@ class AdvancedURLSecurityScanner:
             "url": url,
             "heuristics": [],
             "final_risk_score": 0,
-            "final_risk_level": "LOW"
+            "final_risk_level": "LOW",
         }
 
     def get_hostname(self, url):
-        match = re.search(r'https?://([^/:?#]+)', url)
+        match = re.search(r"https?://([^/:?#]+)", url)
         return match.group(1).lower() if match else ""
 
     def get_registered_domain(self, hostname):
         if not hostname:
             return ""
-        if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', hostname):
+        if re.match(r"^(\d{1,3}\.){3}\d{1,3}$", hostname):
             return hostname
-        parts = hostname.split('.')
+        parts = hostname.split(".")
         if len(parts) < 2:
             return hostname
         if len(parts) >= 3:
@@ -89,13 +147,20 @@ class AdvancedURLSecurityScanner:
             if normalized_domain == normalized_trusted:
                 return f"Character substitution attack mimicking '{trusted}'"
             for original_char, substitutes in self.CHAR_SUBSTITUTIONS.items():
-                if any(sub in domain_lower for sub in substitutes) and original_char in trusted_lower:
-                    similarity = SequenceMatcher(None, normalized_domain, normalized_trusted).ratio()
+                if (
+                    any(sub in domain_lower for sub in substitutes)
+                    and original_char in trusted_lower
+                ):
+                    similarity = SequenceMatcher(
+                        None, normalized_domain, normalized_trusted
+                    ).ratio()
                     if similarity >= threshold:
                         return f"Character substitution attack mimicking '{trusted}' (similarity: {similarity:.2f})"
-                    domain_name = normalized_domain.split('.')[0]
-                    trusted_name = normalized_trusted.split('.')[0]
-                    name_similarity = SequenceMatcher(None, domain_name, trusted_name).ratio()
+                    domain_name = normalized_domain.split(".")[0]
+                    trusted_name = normalized_trusted.split(".")[0]
+                    name_similarity = SequenceMatcher(
+                        None, domain_name, trusted_name
+                    ).ratio()
                     if name_similarity >= 0.85:
                         return f"Character substitution attack mimicking '{trusted}' (domain name similarity: {name_similarity:.2f})"
         return None
@@ -103,7 +168,9 @@ class AdvancedURLSecurityScanner:
     def check_trusted_domain_spoofing(self):
         for trusted in self.TRUSTED_DOMAINS:
             if trusted in self.hostname and self.registered_domain != trusted:
-                if f"{trusted}." in self.hostname and not self.hostname.endswith(f".{trusted}"):
+                if f"{trusted}." in self.hostname and not self.hostname.endswith(
+                    f".{trusted}"
+                ):
                     return f"Trusted domain '{trusted}' appears as subdomain of '{self.registered_domain}'"
         return None
 
@@ -113,21 +180,21 @@ class AdvancedURLSecurityScanner:
         similarity = SequenceMatcher(None, domain, trusted_domain).ratio()
         if similarity >= threshold:
             return True
-        d_name = domain.split('.')[0]
-        t_name = trusted_domain.split('.')[0]
+        d_name = domain.split(".")[0]
+        t_name = trusted_domain.split(".")[0]
         if abs(len(d_name) - len(t_name)) <= 1:
             return SequenceMatcher(None, d_name, t_name).ratio() >= 0.85
         return False
 
     def contains_suspicious_patterns(self):
         patterns = []
-        if '..' in self.url:
+        if ".." in self.url:
             patterns.append("Multiple consecutive dots in URL")
-        if self.url.count('-') > 3:
+        if self.url.count("-") > 3:
             patterns.append("Excessive use of hyphens")
-        if re.search(r'[а-я].*[a-z]|[a-z].*[а-я]', self.url, re.IGNORECASE):
+        if re.search(r"[а-я].*[a-z]|[a-z].*[а-я]", self.url, re.IGNORECASE):
             patterns.append("Mixed Latin and Cyrillic characters")
-        if port := re.search(r':(\d+)', self.url):
+        if port := re.search(r":(\d+)", self.url):
             port = int(port.group(1))
             if port not in [80, 443, 8080, 8443] and port < 1024:
                 patterns.append(f"Suspicious port number: {port}")
@@ -135,7 +202,7 @@ class AdvancedURLSecurityScanner:
 
     def run_heuristics(self):
         reasons = []
-        if not re.match(r'https?://.+', self.url):
+        if not re.match(r"https?://.+", self.url):
             reasons.append("Invalid URL format")
             self.report["heuristics"] = reasons
             return reasons
@@ -145,50 +212,60 @@ class AdvancedURLSecurityScanner:
             reasons.append("Could not extract hostname from URL")
             self.report["heuristics"] = reasons
             return reasons
-        if re.match(r'^(\d{1,3}\.){3}\d{1,3}$', self.hostname):
+        if re.match(r"^(\d{1,3}\.){3}\d{1,3}$", self.hostname):
             reasons.append("Domain is an IP address")
         if spoof := self.check_trusted_domain_spoofing():
             reasons.append(spoof)
         if char_attack := self.is_character_substitution_attack():
             reasons.append(char_attack)
 
-        found_keywords = [kw for kw in self.BLACKLIST_KEYWORDS if kw in self.url.lower()]
+        found_keywords = [
+            kw for kw in self.BLACKLIST_KEYWORDS if kw in self.url.lower()
+        ]
         if found_keywords:
             if self.registered_domain not in self.TRUSTED_DOMAINS:
-                reasons.append(f"Contains suspicious keywords: {', '.join(found_keywords)}")
+                reasons.append(
+                    f"Contains suspicious keywords: {', '.join(found_keywords)}"
+                )
 
         if len(self.url) > 100:
             reasons.append("URL length is suspiciously long")
-        if self.url.count('@') > 0:
+        if self.url.count("@") > 0:
             reasons.append("URL contains '@' symbol (potential redirect)")
-        if '//' in self.url[8:]:
+        if "//" in self.url[8:]:
             reasons.append("Suspicious '//' found in URL path")
-        if self.hostname.count('.') > 4:
+        if self.hostname.count(".") > 4:
             reasons.append("Excessive number of subdomains")
-        if re.search(r'[\s\u202E\u202D\u200E\u200F]', self.url):
+        if re.search(r"[\s\u202E\u202D\u200E\u200F]", self.url):
             reasons.append("Contains suspicious Unicode characters")
         if self.registered_domain in self.URL_SHORTENERS:
             reasons.append("Uses a URL shortening service")
-        tld = self.hostname.split('.')[-1]
+        tld = self.hostname.split(".")[-1]
         if tld in self.SUSPICIOUS_TLDS:
             reasons.append(f"Uses suspicious top-level domain: .{tld}")
         try:
-            self.hostname.encode('ascii')
+            self.hostname.encode("ascii")
         except UnicodeEncodeError:
-            reasons.append("Domain contains non-ASCII characters (potential IDN homograph attack)")
+            reasons.append(
+                "Domain contains non-ASCII characters (potential IDN homograph attack)"
+            )
         for trusted in self.TRUSTED_DOMAINS:
             if self.is_similar_domain(self.registered_domain, trusted):
-                reasons.append(f"Domain '{self.registered_domain}' is suspiciously similar to '{trusted}'")
+                reasons.append(
+                    f"Domain '{self.registered_domain}' is suspiciously similar to '{trusted}'"
+                )
         reasons.extend(self.contains_suspicious_patterns())
-        if 'xn--' in self.hostname:
-            reasons.append("Domain uses Punycode encoding (potential IDN homograph attack)")
+        if "xn--" in self.hostname:
+            reasons.append(
+                "Domain uses Punycode encoding (potential IDN homograph attack)"
+            )
 
         self.report["heuristics"] = reasons
         return reasons
 
     def perform_dns_lookup(self):
         try:
-            dns.resolver.resolve(self.registered_domain, 'A')
+            dns.resolver.resolve(self.registered_domain, "A")
 
         except Exception:
             pass
@@ -196,7 +273,9 @@ class AdvancedURLSecurityScanner:
     def perform_dnssec_validation(self):
         try:
             domain_name = dns.name.from_text(self.registered_domain)
-            response = dns.query.udp(dns.message.make_query(domain_name, dns.rdatatype.DNSKEY), '8.8.8.8')
+            response = dns.query.udp(
+                dns.message.make_query(domain_name, dns.rdatatype.DNSKEY), "8.8.8.8"
+            )
         except Exception:
             pass
 
@@ -205,7 +284,7 @@ class AdvancedURLSecurityScanner:
             context = ssl.create_default_context()
             with socket.create_connection((self.hostname, 443), timeout=5) as sock:
                 with context.wrap_socket(sock, server_hostname=self.hostname) as ssock:
-                    pass  
+                    pass
         except Exception:
             pass
 
@@ -237,7 +316,6 @@ class AdvancedURLSecurityScanner:
         self.perform_whois_lookup()
         self.calculate_final_risk()
 
-    
         is_trusted_subdomain = any(
             self.hostname == trusted or self.hostname.endswith("." + trusted)
             for trusted in self.TRUSTED_DOMAINS
@@ -255,6 +333,6 @@ class AdvancedURLSecurityScanner:
             "final_risk_score": self.report["final_risk_score"],
             "final_risk_level": self.report["final_risk_level"],
             "is_safe": is_safe,
-            "reasons": reasons
+            "reasons": reasons,
         }
-        return json.dumps(output,indent=4)
+        return json.dumps(output, indent=4)
