@@ -28,7 +28,7 @@ DJANGO_DEFAULT_APP = [
     "django.contrib.staticfiles",
 ]
 LOCAL_APPS = [
-
+    "coresec",
 ]
 EXTERNAL_PACKAGES = [
     'rest_framework'
