@@ -92,3 +92,36 @@ class MalwareScanView(APIView):
                 })
 
             time.sleep(3)
+
+
+class DomainReputationView(APIView):
+
+    def get(self, request):
+        domain = request.query_params.get('domain')
+        if not domain:
+            return Response({"error": "Missing 'domain' query parameter."}, status=status.HTTP_400_BAD_REQUEST)
+
+        url = f'https://www.virustotal.com/api/v3/domains/{domain}'
+        headers = {'x-apikey': VT_API_KEY}
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            data = response.json()
+            attributes = data.get('data', {}).get('attributes', {})
+            last_analysis_stats = attributes.get('last_analysis_stats', {})
+            reputation = attributes.get('reputation', 'N/A')
+            categories = attributes.get('categories', {})
+
+            result = {
+                "domain": domain,
+                "reputation": reputation,
+                "categories": categories,
+                "last_analysis_stats": last_analysis_stats
+            }
+            return Response(result)
+        else:
+            return Response({
+                "error": f"VirusTotal API request failed with status {response.status_code}",
+                "details": response.text
+            }, status=response.status_code)
