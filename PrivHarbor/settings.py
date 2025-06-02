@@ -31,7 +31,8 @@ LOCAL_APPS = [
     "coresec",
 ]
 EXTERNAL_PACKAGES = [
-    'rest_framework'
+    'rest_framework',
+    'corsheaders'
 ]
 
 INSTALLED_APPS = DJANGO_DEFAULT_APP + EXTERNAL_PACKAGES + LOCAL_APPS
@@ -44,8 +45,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
 ]
-
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React dev server
+]
 ROOT_URLCONF = "PrivHarbor.urls"
 
 TEMPLATES = [
