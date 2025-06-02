@@ -2,6 +2,7 @@ import re
 import json
 import ssl
 import socket
+import requests
 import whois
 import dns.resolver
 import dns.dnssec
@@ -100,6 +101,8 @@ class AdvancedURLSecurityScanner:
     ]
 
     def __init__(self, url):
+        if not url.startswith("http://") and not url.startswith("https://"):
+            url = self.determine_protocol(url)
         self.url = url
         self.hostname = self.get_hostname(url)
         self.registered_domain = self.get_registered_domain(self.hostname)
@@ -110,10 +113,27 @@ class AdvancedURLSecurityScanner:
             "final_risk_level": "LOW",
         }
 
+
     def get_hostname(self, url):
         match = re.search(r"https?://([^/:?#]+)", url)
         return match.group(1).lower() if match else ""
+    
+    def determine_protocol(self, domain):
+        domain = domain.strip().lower().replace("http://", "").replace("https://", "").rstrip('/')
+        https_url = f"https://{domain}"
+        http_url = f"http://{domain}"
 
+        try:
+            requests.get(https_url, timeout=5)
+            return f"https://{domain}"
+        except requests.exceptions.SSLError:
+            return f"http://{domain}"
+        except requests.exceptions.RequestException:
+            try:
+                requests.get(http_url, timeout=5)
+                return f"http://{domain}"
+            except requests.exceptions.RequestException:
+                return f"http://{domain}"
     def get_registered_domain(self, hostname):
         if not hostname:
             return ""
