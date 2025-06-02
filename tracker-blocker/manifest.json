@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Cookie Analyzer & Blocker",
+  "version": "1.0",
+  "description": "Analyzes and removes suspicious cookies.",
+  "permissions": [
+    "cookies",
+    "tabs",
+    "storage"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon.png",
+      "48": "icons/icon.png",
+      "128": "icons/icon.png"
+    }
+  }
+}
